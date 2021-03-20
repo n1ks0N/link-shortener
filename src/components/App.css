@@ -29,13 +29,6 @@ main {
   justify-content: space-between;
   align-items: flex-start;
 }
-.panel {
-  max-width: 100%;
-  width: 600px;
-  position: relative;
-  margin-bottom: 50px;
-  margin: auto;
-}
 .ya-share2 {
   margin-top: 25px;
 }
@@ -79,6 +72,19 @@ footer {
   color: #fff;
   text-align: center;
 }
+.loader {
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+.main__alert {
+  position: fixed;
+  bottom: 0;
+  right: 0;
+}
 @media all and (max-width: 650px) {
   iframe {
       width: 100%;
@@ -95,9 +101,4 @@ footer {
   .panel__group {
       width: 100vw;
   }
-}
-
-/* Result.js */
-.banner__wrapper {
-  flex-direction: column;
 }

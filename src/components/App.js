@@ -1,4 +1,10 @@
-import React, { useRef, useState, useLayoutEffect, useEffect } from 'react';
+import React, {
+	useRef,
+	useState,
+	useLayoutEffect,
+	useEffect,
+	useMemo
+} from 'react';
 import { urlAd, keyAd } from '../constants/api.json';
 import { fbDatabase } from '../constants/config';
 import './App.css';
@@ -10,19 +16,24 @@ const App = () => {
 	const [url, setUrl] = useState('');
 	const urlRef = useRef(value);
 	useEffect(() => {
-    const name = window.location.href.split('?')[1];
+		// редирект по url
+		const name = window.location.href.split('?')[1];
 		if (name) {
 			fbDatabase
-      .database()
-      .ref(`/${name}`)
-      .on('value', (snapshot) => {
-        snapshot.val() !== null ? window.location.href = snapshot.val().link : window.location.href = '/'
-      });
+				.database()
+				.ref(`/${name}`)
+				.on('value', (snapshot) => {
+					const val = snapshot.val();
+					val !== null
+						? (window.location.href = val.link)
+						: (window.location.href = '/');
+				});
 		} else {
-      setPreloader(false)
-    }
+			setPreloader(false);
+		}
 	}, []);
 	useLayoutEffect(() => {
+		// добавление рекламного контента
 		let req = new XMLHttpRequest();
 		req.onreadystatechange = () => {
 			// eslint-disable-next-line
@@ -49,7 +60,7 @@ const App = () => {
 				}
 			}
 		};
-		req.open('GET', 'urlAd', true);
+		req.open('GET', urlAd, true);
 		req.setRequestHeader('X-Master-Key', keyAd);
 		req.send();
 
@@ -70,35 +81,62 @@ by https://github.com/n1ks0N
 	};
 
 	const shortUrl = () => {
-		let urlName = '';
-		const alphabet = 'abcdefghijklmnopqrstuvwxyz1234567890';
-		for (let i = 0; i < 6; i++) {
-			urlName += alphabet.charAt(Math.floor(Math.random() * alphabet.length));
+		var pattern = new RegExp(
+			'^(https?:\\/\\/)?' +
+				'((([a-z\\d]([a-z\\d-]*[a-z\\d])*)\\.)+[a-z]{2,}|' +
+				'((\\d{1,3}\\.){3}\\d{1,3}))' +
+				'(\\:\\d+)?(\\/[-a-z\\d%_.~+]*)*' +
+				'(\\?[;&a-z\\d%_.~+=-]*)?' +
+				'(\\#[-a-z\\d_]*)?$',
+			'i'
+		);
+		if (pattern.test(value)) {
+			let urlName = '';
+			const alphabet = 'abcdefghijklmnopqrstuvwxyz1234567890';
+			for (let i = 0; i < 6; i++) {
+				urlName += alphabet.charAt(Math.floor(Math.random() * alphabet.length));
+			}
+			fbDatabase
+				.database()
+				.ref(`/${urlName}`)
+				.set({
+					link: value,
+					url: `${window.location.href}?${urlName}`
+				})
+				.then(() => {
+					fbDatabase
+						.database()
+						.ref(`/${urlName}`)
+						.on('value', (snapshot) => {
+							setUrl(snapshot.val().url);
+						});
+				});
 		}
-		fbDatabase
-			.database()
-			.ref(`/${urlName}`)
-			.set({
-				link: value,
-				url: `${window.location.href}?${urlName}`
-			})
-			.then(() => {
-				fbDatabase
-					.database()
-					.ref(`/${urlName}`)
-					.on('value', (snapshot) => {
-						setUrl(snapshot.val().url);
-					});
-			});
 	};
-  const onFocus = (e) => {
+	const [alert, setAlert] = useState(false);
+	const onFocus = (e) => {
 		e.persist();
 		e.target.select();
 		navigator.clipboard.writeText(url);
+		setAlert(true);
 	};
-  const copy = () => {
-    navigator.clipboard.writeText(url)
-  }
+	const copy = () => {
+		navigator.clipboard.writeText(url);
+		setAlert(true);
+	};
+	const alertStyle = useMemo(
+		() => ({
+			display: alert ? 'block' : 'none'
+		}),
+		[alert]
+	);
+	useEffect(() => {
+		if (alert) {
+			setTimeout(() => {
+				setAlert(false);
+			}, 3000);
+		}
+	}, [alert, setAlert]);
 	return (
 		<>
 			{!preloader ? (
@@ -165,28 +203,28 @@ by https://github.com/n1ks0N
 										Сократить
 									</button>
 								</div>
-                {!!url &&
-								<div className="input-group">
-									<input
-										type="url"
-										className="form-control"
-										value={url}
-                    onFocus={onFocus}
-										disabled
-									/>
-									<button
-										type="button"
-										className="btn btn-primary"
-										onClick={copy}
-									>
-										Скопировать
-									</button>
-								</div>
-}
+								{!!url && (
+									<div className="input-group">
+										<input
+											type="url"
+											className="form-control"
+											value={url}
+											onClick={(e) => onFocus(e)}
+											disabled
+										/>
+										<button
+											type="button"
+											className="btn btn-primary"
+											onClick={copy}
+										>
+											Скопировать
+										</button>
+									</div>
+								)}
 							</div>
 							<center>
 								<p>
-									Если вам был полезен наш конструктор,
+									Если вам был полезен наш сокращатель,
 									<br />
 									Вы можете пожертвовать сколько не жалко..
 								</p>
@@ -229,10 +267,19 @@ by https://github.com/n1ks0N
 							Создание сайтов — Nikson
 						</div>
 					</footer>
+					<div
+						className="alert alert-secondary main__alert"
+						style={alertStyle}
+						role="alert"
+					>
+						Скопировано
+					</div>
 				</>
 			) : (
-				<div className="spinner-border text-primary" role="status">
-					<span className="visually-hidden"></span>
+				<div className="loader">
+					<div className="spinner-border text-primary" role="status">
+						<span className="visually-hidden"></span>
+					</div>
 				</div>
 			)}
 		</>
