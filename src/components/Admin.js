@@ -102,7 +102,7 @@ const Admin = () => {
 	};
 
 	const send = () => {
-		let req = new XMLHttpRequest();
+		let req = new XMLHttpRequest();	
 		req.open('PUT', urlAd, true);
 		req.setRequestHeader('Content-Type', 'application/json');
 		req.setRequestHeader('X-Master-Key', keyAd);
@@ -223,6 +223,37 @@ const Admin = () => {
 						</button>
 					</center>
 					<h2 align="center">Footer</h2>
+					<h3 align="center">Banners</h3>
+					{Object.values(data.footer.banners).map((data, i) => (
+						<div className="section" key={i}>
+							<InputText
+								text="Код"
+								type="text"
+								value={data.div}
+								name={`footer.banners.div`}
+								change={change}
+								i={i}
+							/>
+							<button
+								type="button"
+								className="btn btn-danger btn-sm"
+								onClick={(e) => del(e)}
+								id={`footer.banners.${i}`}
+							>
+								Удалить
+							</button>
+						</div>
+					))}
+					<center>
+						<button
+							type="button"
+							className="btn btn-success"
+							onClick={(e) => add(e)}
+							id={`footer.banners`}
+						>
+							Добавить
+						</button>
+					</center>
 					<h3 align="center">Linkslot</h3>
 					{Object.values(data.footer.linkslot).map((data, i) => (
 						<div className="section" key={i}>
@@ -250,6 +281,45 @@ const Admin = () => {
 							className="btn btn-success"
 							onClick={(e) => add(e)}
 							id={`footer.linkslot`}
+						>
+							Добавить
+						</button>
+					</center>
+					<h3 align="center">Socials</h3>
+					{Object.values(data.footer.socials).map((data, i) => (
+						<div id={`socials${i}`} className="section" key={i}>
+							<InputText
+								text="Текст"
+								type="text"
+								value={data.text}
+								name={`footer.socials.text`}
+								change={change}
+								i={i}
+							/>
+							<InputText
+								text="Ссылка"
+								type="text"
+								value={data.link}
+								name={`footer.socials.link`}
+								change={change}
+								i={i}
+							/>
+							<button
+								type="button"
+								className="btn btn-danger btn-sm"
+								onClick={(e) => del(e)}
+								id={`footer.socials.${i}`}
+							>
+								Удалить
+							</button>
+						</div>
+					))}
+					<center>
+						<button
+							type="button"
+							className="btn btn-success"
+							onClick={(e) => add(e)}
+							id={`footer.socials`}
 						>
 							Добавить
 						</button>
